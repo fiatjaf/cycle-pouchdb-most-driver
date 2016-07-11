@@ -1,0 +1,47 @@
+{
+  "name": "cycle-pouchdb-most-driver",
+  "sourceType": "module",
+  "version": "0.0.1",
+  "description": "A PouchDB driver that gives you subscriptions to be used with Cycle's most-run",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fiatjaf/cycle-pouchdb-most-driver.git"
+  },
+  "browserify": {
+    "transform": [
+      "babelify"
+    ]
+  },
+  "babel": {
+    "presets": [
+      "es2015"
+    ]
+  },
+  "keywords": [
+    "cycle",
+    "cyclejs",
+    "most",
+    "driver",
+    "pouchdb"
+  ],
+  "peerDependencies": {
+    "most": "*"
+  },
+  "devDependencies": {
+    "babel-core": "^6.4.5",
+    "babel-preset-es2015": "^6.3.13",
+    "babelify": "^7.2.0",
+    "browserify": "11.0.1"
+  },
+  "author": "Giovanni T. Parra",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fiatjaf/cycle-pouchdb-most-driver/issues"
+  },
+  "homepage": "https://github.com/fiatjaf/cycle-pouchdb-most-driver#readme",
+  "dependencies": {
+    "@most/create": "^1.0.1",
+    "deep-equal": "^1.0.1"
+  }
+}
