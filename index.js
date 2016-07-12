@@ -111,7 +111,7 @@ export function makePouchDBDriver (PouchDB) {
           })
 
           /* on feed start listen dispatch a fake event */
-          setTimeout(() => feed.emit('change'), 1)
+          setTimeout(() => feed.emit('change', {}), 1)
 
           break
         case 'put':
