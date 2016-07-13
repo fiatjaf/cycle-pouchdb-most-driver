@@ -1,6 +1,6 @@
 This is a driver for all your [pure-most Cycle apps](https://github.com/cyclejs/most-run) (think [Motorcycle](https://github.com/motorcyclejs/core#merging-with-cyclejs)) that speak with [PouchDB](https://pouchdb.com/).
 
-It works with a kind of "subscriptions", not supporting all PouchDB features, however making it easy to deal with PouchDB from most streams.
+It returns streams from `.get`, `.query` and `.changes` methods for easy read access to PouchDB data, and accepts `.put` and `.ensure` operations for write.
 
 ### Install
 
@@ -23,30 +23,39 @@ Cycle.run(app, {
     require('snabbdom/modules/props'),
     require('snabbdom/modules/style')
   ]),
-  POUCHDB: makePouchDBDriver(PouchDB)
+  POUCHDB: makePouchDBDriver(PouchDB, 'my-db-name')
 })
 
 function app ({DOM, POUCHDB}) {
   let vtree$ = POUCHDB
-    .
+    .query('my-ddoc/items-by-time', {descending: true, startkey: [{}], endkey: [null], include_docs: true})
+    .map(res => res.rows.map(r => r.doc))
     .map(items =>
       h('ul', items.map(item =>
-        h('li', {props: {id: item.id}}, item.name)
+        h('li', {props: {id: item._id}}, item.name)
       ))
     )
 
   return {
     DOM: vtree$,
-    GRAPHQL: most.from([{
-      query: 'fetchItems'
-    }, {
-      mutation: 'setItem',
-      variables: {
-        id: 123,
-        name: 'an item',
-        desc: 'this is an item'
-      }
-    }])
+    POUCHDB: most.from([
+      POUCHDB.ensure({
+        '_id': '_design/my-ddoc',
+        'views': {
+          'items-by-time': {
+            'map': `
+              function (doc) {
+                if (doc.type == 'item') {
+                  emit([doc.year, doc.month, doc.day, doc.time], doc.value)
+                }
+              }
+            `
+          }
+        }
+      }),
+      POUCHDB.put({_id: 'xyz', name: 'lalala', year: 2018, month: 2, day: 21, time: '14:44:23'})
+      POUCHDB.put({_id: 'uyt', name: 'lololo', year: 2018, month: 2, day: 22, time: '10:01:36'})
+    ])
   }
 }
 ```

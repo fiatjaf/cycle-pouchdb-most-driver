@@ -2,7 +2,7 @@
   "name": "cycle-pouchdb-most-driver",
   "sourceType": "module",
   "version": "0.0.1",
-  "description": "A PouchDB driver that gives you subscriptions to be used with Cycle's most-run",
+  "description": "A PouchDB driver that returns easy streams to be used with Cycle's most-run",
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -20,15 +20,20 @@
   },
   "keywords": [
     "cycle",
+    "motorcycle",
+    "motorcyclejs",
     "cyclejs",
     "most",
     "driver",
-    "pouchdb"
+    "pouchdb",
+    "subscriptions"
   ],
   "peerDependencies": {
     "most": "*"
   },
   "dependencies": {
+    "@most/create": "^1.0.1",
+    "deep-equal": "^1.0.1",
     "pouchdb-live-query": "fiatjaf/pouchdb-live-query"
   },
   "devDependencies": {
@@ -42,9 +47,5 @@
   "bugs": {
     "url": "https://github.com/fiatjaf/cycle-pouchdb-most-driver/issues"
   },
-  "homepage": "https://github.com/fiatjaf/cycle-pouchdb-most-driver#readme",
-  "dependencies": {
-    "@most/create": "^1.0.1",
-    "deep-equal": "^1.0.1"
-  }
+  "homepage": "https://github.com/fiatjaf/cycle-pouchdb-most-driver#readme"
 }
