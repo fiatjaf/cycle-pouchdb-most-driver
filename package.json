@@ -42,6 +42,9 @@
     "babelify": "^7.2.0",
     "browserify": "11.0.1"
   },
+  "scripts": {
+    "postinstall": "cd node_modules/pouchdb-live-query/ && npm install --only=production"
+  },
   "author": "Giovanni T. Parra",
   "license": "MIT",
   "bugs": {
