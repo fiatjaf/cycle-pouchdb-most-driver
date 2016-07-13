@@ -1,119 +1,89 @@
 import create from '@most/create'
 import deepEqual from 'deep-equal'
 
-export function makePouchDBDriver (PouchDB) {
-  return function PouchDBDriver (op$) {
-    const pouches = {}
+export function makePouchDBDriver (PouchDB, dbName) {
+  PouchDB.plugin(require('pouchdb-live-query'))
 
+  const db = new PouchDB(dbName)
+
+  var emitters = {}
+  var feed = db.changes({
+    live: true,
+    include_docs: true,
+    since: 'now'
+  })
+
+  /* on every change: */
+  feed.on('change', change => {
+    var emit
+
+    /* emit the changed doc to the listeners */
+    emit = emitters[`${dbName}.get.${change.id}`]
+    if (emit) {
+      emit(change.doc)
+    }
+
+    /* emit the change itself */
+    emit = emitters[`${dbName}.changes`]
+    if (emit) {
+      emit(change)
+    }
+  })
+
+  return function PouchDBDriver (op$) {
     var emitters = {}
     var streams = {}
 
     var o = {
-      open (dbName) {
+      put (doc) {
         return {
-          op: 'open',
-          dbName
+          op: 'put',
+          doc
         }
       },
 
-      db (dbName) {
-        let db = pouches[db]
-
+      ensure (doc) {
         return {
-          put (doc) {
-            return {
-              op: 'put',
-              doc,
-              dbName
-            }
-          },
-
-          ensure (doc) {
-            return {
-              op: 'ensure',
-              doc,
-              dbName
-            }
-          },
-
-          query (funName, options = {}) {
-            let optstring = JSON.stringify(options)
-            let stream = streams[`${dbName}.query.${funName}-${optstring}`]
-            if (!stream) {
-              stream = create(add => {
-                add.funName = funName // a hack to give the changes listener below
-                add.options = options // access to the query paramenters.
-
-                emitters[`${dbName}.query`] = emitters[`${dbName}.query`] || []
-                emitters[`${dbName}.query`].push(add)
-              })
-            }
-
-            return stream
-              .multicast()
-          },
-
-          get (docid) {
-            let stream = streams[`${dbName}.get.${docid}`] || create(add => {
-              emitters[`${dbName}.get.${docid}`] = add
-            })
-
-            return stream
-              .multicast()
-          },
-
-          changes () {
-            let stream = streams[`${dbName}.changes`] || create(add => {
-              emitters[`${dbName}.changes`] = add
-            })
-            return stream.multicast()
-          }
+          op: 'ensure',
+          doc
         }
+      },
+
+      query (funName, options = {}) {
+        let optstring = JSON.stringify(options)
+        let stream = streams[`query.${funName}-${optstring}`] || create(add => {
+          db.liveQuery(funName, options)
+            .then(result => {
+              add(result)
+
+              result.on('change', add)
+            })
+        }).multicast()
+        streams[`query.${funName}-${optstring}`] = stream
+
+        return stream
+          .multicast()
+      },
+
+      get (docid) {
+        let stream = streams[`get.${docid}`] || create(add => {
+          emitters[`get.${docid}`] = add
+        })
+
+        return stream
+          .multicast()
+      },
+
+      changes () {
+        let stream = streams['changes'] || create(add => {
+          emitters['changes'] = add
+        })
+        return stream.multicast()
       }
     }
 
     op$.observe(op => {
-      let dbName = op.dbName
-      let db = pouches[dbName]
       switch (op.op) {
-        case 'open':
-          db = new PouchDB(dbName)
-          let feed = db.changes({
-            live: true,
-            include_docs: true,
-            since: 'now'
-          })
-          pouches[dbName] = db
-
-          /* on every change: */
-          feed.on('change', change => {
-            var emit
-
-            /* redo all the queries and emit the results */
-            emitters[`${dbName}.query`].forEach(emit => {
-              db.query(emit.funName, emit.options, (err, res) => {
-                if (err) return emit(err)
-                emit(res)
-              })
-            })
-
-            /* emit the changed doc to the listeners */
-            emit = emitters[`${dbName}.get.${change.id}`]
-            if (emit) {
-              emit(change.doc)
-            }
-
-            /* emit the change itself */
-            emit = emitters[`${dbName}.changes`]
-            if (emit) {
-              emit(change)
-            }
-          })
-
-          /* on feed start listen dispatch a fake event */
-          setTimeout(() => feed.emit('change', {}), 1)
-
-          break
         case 'put':
           db.put(op.doc) // changes will be emitted on the 'changes' listener above
           break

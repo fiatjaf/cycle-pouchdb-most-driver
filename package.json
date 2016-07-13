@@ -28,6 +28,9 @@
   "peerDependencies": {
     "most": "*"
   },
+  "dependencies": {
+    "pouchdb-live-query": "fiatjaf/pouchdb-live-query"
+  },
   "devDependencies": {
     "babel-core": "^6.4.5",
     "babel-preset-es2015": "^6.3.13",
