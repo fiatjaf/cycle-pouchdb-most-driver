@@ -35,6 +35,8 @@ export function makePouchDBDriver (PouchDB, dbName) {
     var streams = {}
 
     var o = {
+      DB: db,
+
       put (doc) {
         return {
           op: 'put',
