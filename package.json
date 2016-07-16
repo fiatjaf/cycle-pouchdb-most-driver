@@ -1,7 +1,7 @@
 {
   "name": "cycle-pouchdb-most-driver",
   "sourceType": "module",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A PouchDB driver that returns easy streams to be used with Cycle's most-run",
   "main": "index.js",
   "repository": {

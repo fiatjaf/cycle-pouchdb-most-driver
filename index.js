@@ -60,8 +60,9 @@ export function makePouchDBDriver (PouchDB, dbName) {
           db.liveQuery(funName, options)
             .then(result => {
               add(result)
-
-              result.on('change', add)
+              result.on('change', change => {
+                add(result)
+              })
             })
         }).multicast()
         streams[`query.${funName}-${optstring}`] = stream
