@@ -7,6 +7,7 @@ export function makePouchDBDriver (PouchDB, dbName) {
   const db = new PouchDB(dbName)
 
   var emitters = {}
+  var errorEmitters = []
   var feed = db.changes({
     live: true,
     include_docs: true,
@@ -18,20 +19,22 @@ export function makePouchDBDriver (PouchDB, dbName) {
     var emit
 
     /* emit the changed doc to the listeners */
-    emit = emitters[`${dbName}.get.${change.id}`]
-    if (emit) {
-      emit(change.doc)
-    }
+    emit = emitters[`get.${change.id}`]
+    if (emit) emit(change.doc)
 
     /* emit the change itself */
-    emit = emitters[`${dbName}.changes`]
-    if (emit) {
-      emit(change)
+    emit = emitters['changes']
+    if (emit) emit(change)
+  })
+
+  feed.on('error', err => {
+    for (let i = 0; i < errorEmitters.length; i++) {
+      let emitError = errorEmitters[i]
+      emitError(err)
     }
   })
 
   return function PouchDBDriver (op$) {
-    var emitters = {}
     var streams = {}
 
     var o = {
@@ -68,8 +71,9 @@ export function makePouchDBDriver (PouchDB, dbName) {
       },
 
       get (docid) {
-        let stream = streams[`get.${docid}`] || create(add => {
+        let stream = streams[`get.${docid}`] || create((add, _, error) => {
           emitters[`get.${docid}`] = add
+          errorEmitters.push(error)
         })
 
         return stream
@@ -77,8 +81,9 @@ export function makePouchDBDriver (PouchDB, dbName) {
       },
 
       changes () {
-        let stream = streams['changes'] || create(add => {
+        let stream = streams['changes'] || create((add, _, error) => {
           emitters['changes'] = add
+          errorEmitters.push(error)
         })
         return stream.multicast()
       }
