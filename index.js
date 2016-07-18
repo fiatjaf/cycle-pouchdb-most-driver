@@ -47,6 +47,14 @@ export function makePouchDBDriver (PouchDB, dbName) {
         }
       },
 
+      remove (idOrDoc, revMaybe) {
+        return {
+          op: 'remove',
+          docid: typeof idOrDoc === 'object' ? idOrDoc._id : idOrDoc,
+          docrev: revMaybe || idOrDoc._rev
+        }
+      },
+
       ensure (doc) {
         return {
           op: 'ensure',
@@ -94,6 +102,9 @@ export function makePouchDBDriver (PouchDB, dbName) {
       switch (op.op) {
         case 'put':
           db.put(op.doc) // changes will be emitted on the 'changes' listener above
+          break
+        case 'remove':
+          db.remove(op.docid, op.docrev)
           break
         case 'ensure':
           db.get(op.doc._id, (err, res) => {

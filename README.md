@@ -1,6 +1,6 @@
 This is a driver for all your [pure-most Cycle apps](https://github.com/cyclejs/most-run) (think [Motorcycle](https://github.com/motorcyclejs/core#merging-with-cyclejs)) that speak with [PouchDB](https://pouchdb.com/).
 
-It returns streams from `.get`, `.query` and `.changes` methods for easy read access to PouchDB data, and accepts `.put` and `.ensure` operations for write.
+It returns streams from `.get`, `.query` and `.changes` methods for easy read access to PouchDB data, and accepts `.put`, `.remove` and `.ensure` operations for write.
 
 ### Install
 
@@ -19,10 +19,7 @@ import {makePouchDBDriver} from 'cycle-pouchdb-most-driver'
 import Cycle from '@cycle/most-run'
 
 Cycle.run(app, {
-  DOM: makeDOMDriver('#container', [
-    require('snabbdom/modules/props'),
-    require('snabbdom/modules/style')
-  ]),
+  DOM: makeDOMDriver('#container'),
   POUCHDB: makePouchDBDriver(PouchDB, 'my-db-name')
 })
 
