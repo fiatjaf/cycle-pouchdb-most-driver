@@ -1,6 +1,6 @@
 This is a driver for all your [pure-most Cycle apps](https://github.com/cyclejs/most-run) (think [Motorcycle](https://github.com/motorcyclejs/core#merging-with-cyclejs)) that speak with [PouchDB](https://pouchdb.com/).
 
-It returns streams from `.get`, `.query` and `.changes` methods for easy read access to PouchDB data, and accepts `.put`, `.remove` and `.ensure` operations for write.
+It returns streams from `.get`, `.query` and `.changes` methods for easy read access to PouchDB data, and accepts `.put` and `.remove` operations for write.
 
 ### Install
 
@@ -36,7 +36,7 @@ function app ({DOM, POUCHDB}) {
   return {
     DOM: vtree$,
     POUCHDB: most.from([
-      POUCHDB.ensure({
+      POUCHDB.put({
         '_id': '_design/my-ddoc',
         'views': {
           'items-by-time': {

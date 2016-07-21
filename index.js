@@ -1,5 +1,4 @@
 import create from '@most/create'
-import deepEqual from 'deep-equal'
 
 export function makePouchDBDriver (PouchDB, dbName) {
   PouchDB.plugin(require('pouchdb-live-query'))
@@ -55,13 +54,6 @@ export function makePouchDBDriver (PouchDB, dbName) {
         }
       },
 
-      ensure (doc) {
-        return {
-          op: 'ensure',
-          doc
-        }
-      },
-
       query (funName, options = {}) {
         let optstring = JSON.stringify(options)
         let stream = streams[`query.${funName}-${optstring}`] || create(add => {
@@ -105,22 +97,6 @@ export function makePouchDBDriver (PouchDB, dbName) {
           break
         case 'remove':
           db.remove(op.docid, op.docrev)
-          break
-        case 'ensure':
-          db.get(op.doc._id, (err, res) => {
-            if (err) {
-              db.put(op.doc)
-            } else {
-              let rev = res._rev
-              delete res._rev
-              if (deepEqual(op.doc, res)) {
-                return
-              } else {
-                op.doc._rev = rev
-                db.put(op.doc)
-              }
-            }
-          })
           break
         case '~':
           break
